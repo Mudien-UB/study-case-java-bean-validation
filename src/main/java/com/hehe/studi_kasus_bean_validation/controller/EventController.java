@@ -3,7 +3,7 @@ package com.hehe.studi_kasus_bean_validation.controller;
 import com.hehe.studi_kasus_bean_validation.dto.EventRequest;
 import com.hehe.studi_kasus_bean_validation.model.Event;
 import com.hehe.studi_kasus_bean_validation.service.EventService;
-import com.hehe.studi_kasus_bean_validation.validation.group_sequence.ValidationSequence;
+import com.hehe.studi_kasus_bean_validation.validation.group_sequence.EventValidationGroupSequence;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -23,7 +23,7 @@ public class EventController {
 	}
 
 	@PostMapping("/create")
-	public ResponseEntity<?> createEvent(@Validated({ValidationSequence.class}) @RequestBody EventRequest eventRequest) {
+	public ResponseEntity<?> createEvent(@Validated({EventValidationGroupSequence.class}) @RequestBody EventRequest eventRequest) {
 
 		Event newEvent = eventService.addEvent(eventRequest);
 

@@ -8,11 +8,20 @@ import jakarta.validation.ConstraintValidatorContext;
 public class DateRangeValidator implements ConstraintValidator<ValidDateRange, EventRequest> {
 
 	@Override
-	public boolean isValid(EventRequest eventRequest, ConstraintValidatorContext constraintValidatorContext) {
+	public boolean isValid(EventRequest eventRequest, ConstraintValidatorContext context) {
 		if(eventRequest.getStartDate() == null || eventRequest.getEndDate() == null) {
-			return true;
+			return true; // biarkan @NotNull menangani
 		}
 
-		return eventRequest.getStartDate().isBefore(eventRequest.getEndDate());
+		boolean valid = eventRequest.getStartDate().isBefore(eventRequest.getEndDate());
+
+		if (!valid) {
+			context.disableDefaultConstraintViolation();
+			context.buildConstraintViolationWithTemplate("{event.date.range.invalid}")
+					.addPropertyNode("startDate")
+					.addConstraintViolation();
+		}
+
+		return valid;
 	}
 }
