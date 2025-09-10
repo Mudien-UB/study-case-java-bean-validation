@@ -1,5 +1,6 @@
 package com.hehe.studi_kasus_bean_validation.validation.validator;
 
+import com.hehe.studi_kasus_bean_validation.util.ValidationUtils;
 import com.hehe.studi_kasus_bean_validation.validation.annotation.StrongPassword;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -13,11 +14,30 @@ public class StrongPasswordValidator implements ConstraintValidator<StrongPasswo
 			return true;
 		}
 
-		return
-				string.length() >= 8
-				&&  string.chars().anyMatch(Character::isLowerCase)
-				&&  string.chars().anyMatch(Character::isDigit)
-				&&  string.chars().anyMatch(Character::isUpperCase)
-				&&  string.matches(".*[^a-zA-Z0-9].*");
+		boolean isValid = true;
+
+		if(string.length()<8){
+			ValidationUtils.addViolation(constraintValidatorContext, "{user.password.invalid.length}");
+			isValid = false;
+		}
+		if(string.chars().noneMatch(Character::isUpperCase)){
+			ValidationUtils.addViolation(constraintValidatorContext, "{user.password.invalid.uppercase}");
+			isValid = false;
+		}
+		if(string.chars().noneMatch(Character::isLowerCase)){
+			ValidationUtils.addViolation(constraintValidatorContext, "{user.password.invalid.lowercase}");
+			isValid = false;
+		}
+		if(string.chars().noneMatch(Character::isDigit)){
+			ValidationUtils.addViolation(constraintValidatorContext, "{user.password.invalid.digit}");
+			isValid = false;
+		}
+		if(!string.matches(".*[^a-zA-Z0-9].*")){
+			ValidationUtils.addViolation(constraintValidatorContext, "{user.password.invalid.symbol}");
+			isValid = false;
+		}
+
+		return isValid;
+
 	}
 }
