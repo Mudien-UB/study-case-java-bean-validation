@@ -5,7 +5,7 @@
 2. Apache Maven 3.8.7
 3. Springboot 3.5.5
 
-## Study Case yang akan dikerjakan
+## Study Case yang di kerjakan
 
 1. UserRegistration
 
