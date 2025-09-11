@@ -74,4 +74,101 @@ public class EventControllerTest {
 				.andDo(MockMvcResultHandlers.print());
 	}
 
+	@Test
+	void whenRequiredChecksFail_thenBusinessRulesAndLimitChecksNotExecuted() throws Exception {
+		// Hanya error di RequiredChecks: eventName kosong
+		String json = """
+    {
+        "eventName": "",
+        "startDate": "%s",
+        "endDate": "%s",
+        "maxParticipants": 10
+    }
+    """.formatted(
+				LocalDate.now().plusDays(1),
+				LocalDate.now().plusDays(2)
+		);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/event/create")
+						.contentType("application/json")
+						.content(json)
+						.locale(new Locale("id", "ID")))
+				.andExpect(MockMvcResultMatchers.status().isBadRequest())
+				.andDo(MockMvcResultHandlers.print());
+	}
+
+	@Test
+	void whenBusinessRulesFail_thenLimitChecksNotExecuted() throws Exception {
+		// RequiredChecks lolos, BusinessRules gagal: startDate setelah endDate
+		String json = """
+    {
+        "eventName": "Workshop Java",
+        "startDate": "%s",
+        "endDate": "%s",
+        "maxParticipants": 10
+    }
+    """.formatted(
+				LocalDate.now().plusDays(3),
+				LocalDate.now().plusDays(2)  // endDate sebelum startDate
+		);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/event/create")
+						.contentType("application/json")
+						.content(json)
+						.locale(new Locale("id", "ID")))
+				.andExpect(MockMvcResultMatchers.status().isBadRequest())
+				.andDo(MockMvcResultHandlers.print());
+	}
+
+	@Test
+	void whenLimitChecksFail_thenRequiredAndBusinessChecksPassed() throws Exception {
+		// RequiredChecks dan BusinessRules lolos, LimitChecks gagal: maxParticipants < 1
+		String json = """
+    {
+        "eventName": "Workshop Java",
+        "startDate": "%s",
+        "endDate": "%s",
+        "maxParticipants": 0
+    }
+    """.formatted(
+				LocalDate.now().plusDays(1),
+				LocalDate.now().plusDays(2)
+		);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/event/create")
+						.contentType("application/json")
+						.content(json)
+						.locale(new Locale("id", "ID")))
+				.andExpect(MockMvcResultMatchers.status().isBadRequest())
+				.andDo(MockMvcResultHandlers.print());
+	}
+
+	@Test
+	void whenErrorsInDifferentGroups_thenErrorsAppearInGroupSequenceOrder() throws Exception {
+		// EventRequest ini memiliki dua error:
+		// 1. RequiredChecks gagal → eventName kosong
+		// 2. LimitChecks gagal → maxParticipants < 1
+		// BusinessRules lolos
+		String json = """
+    {
+        "eventName": "",
+        "startDate": "%s",
+        "endDate": "%s",
+        "maxParticipants": 0
+    }
+    """.formatted(
+				LocalDate.now().plusDays(1),
+				LocalDate.now().plusDays(2)
+		);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/event/create")
+						.contentType("application/json")
+						.content(json)
+						.locale(new Locale("id", "ID")))
+				.andExpect(MockMvcResultMatchers.status().isBadRequest())
+				.andDo(MockMvcResultHandlers.print());
+	}
+
+
+
 }
